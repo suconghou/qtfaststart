@@ -268,7 +268,7 @@ func (f *Faststart) ConvertURL(url string) (io.ReadCloser, error) {
 			go func(item *Atom) {
 				var (
 					thread = 4
-					thunk  = 10240
+					chunk  = 10240
 					curr   int
 					endno  int
 					end    = item.Offset + item.Size
@@ -278,8 +278,8 @@ func (f *Faststart) ConvertURL(url string) (io.ReadCloser, error) {
 					go moovworker(f, jobs, url)
 				}
 				for {
-					cstart := int64(curr*thunk) + item.Offset
-					cend := cstart + int64(thunk)
+					cstart := int64(curr*chunk) + item.Offset
+					cend := cstart + int64(chunk)
 					if cend >= end {
 						cend = end
 						endno = curr
@@ -303,7 +303,7 @@ func (f *Faststart) ConvertURL(url string) (io.ReadCloser, error) {
 			go func(item *Atom) {
 				var (
 					thread = 8
-					thunk  = 524288
+					chunk  = 524288
 					curr   int
 					endno  int
 					end    = item.Offset + item.Size
@@ -313,8 +313,8 @@ func (f *Faststart) ConvertURL(url string) (io.ReadCloser, error) {
 					go worker(f, jobs, url)
 				}
 				for {
-					cstart := int64(curr*thunk) + item.Offset
-					cend := cstart + int64(thunk)
+					cstart := int64(curr*chunk) + item.Offset
+					cend := cstart + int64(chunk)
 					if cend >= end {
 						cend = end
 						endno = curr
@@ -394,14 +394,14 @@ func (f *Faststart) readBytes(chunk int) ([]byte, error) {
 // URLResp return http response
 func URLResp(url string, reqHeader http.Header, timeout int) (*http.Response, error) {
 	client := &http.Client{Timeout: time.Duration(timeout) * time.Second}
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
 	if reqHeader == nil {
 		reqHeader = http.Header{}
+		reqHeader.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36")
 	}
-	reqHeader.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36")
 	req.Header = reqHeader
 	return client.Do(req)
 }
